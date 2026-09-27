@@ -1,0 +1,108 @@
+# component-resource-director policy
+#
+# Copy to ~/.config/component-resource-director/policy.toml and edit.
+#
+# Every unit listed here becomes a unit the director may modify. Anything not
+# listed is invisible to it. A unit with no cgroup yet (never started) will be
+# reported by `crd validate` rather than silently skipped.
+
+[director]
+sampling_interval_s = 15   # loop period; must be >= 5 to keep overhead negligible
+persist = false            # true allows `crd apply --persist` to write real drop-ins
+
+# --- Safety floor ---------------------------------------------------------
+# These are hard limits, not hints. The allocator will shrink allocations or
+# reject the plan rather than cross them. Tuned for a 7.4GiB laptop running a
+# 4-miner solo set: most of the box belongs to mining and the desktop.
+
+[safety]
+# Never allocated to managed components. Covers kwin_wayland (~300Mi),
+# Xwayland, plasmashell, page cache headroom, and the director itself.
+reserve_bytes = "1536M"
+# At most 70% of RAM may sit under a MemoryHigh we set.
+max_managed_mem_high_fraction = 0.70
+# Below this MemAvailable, the director will not *raise* any limit. It may
+# still lower them.
+mem_available_pause_bytes = "1024M"
+# Reject plans whose combined CPUWeight floors exceed this (spec too heavy for
+# this machine to honour).
+max_floor_weight_sum = 4000
+# A miner's OOM kill destroys in-flight work. Never cap a miner.
+allow_memory_max_on_miners = false
+
+# --- Tiers ----------------------------------------------------------------
+# critical   the agent/gateway you are actively talking to (prio 3.0)
+# mining     income-generating miner processes           (prio 2.6)
+# workload   builds, compiles, batch jobs                (prio 1.6)
+# background indexers, monitors, caches                  (prio 0.7)
+#
+# Precedence: critical > mining > workload > background. A miner that is
+# actively working never drops below CPUWeight 2000; it also never exceeds
+# 8000, so it cannot starve the desktop or your active session.
+
+[[components]]
+unit = "hermes-gateway.service"
+label = "Hermes Gateway"
+tier = "critical"
+kind = "service"
+cpu_weight_min = 300
+cpu_weight_max = 4000
+mem_high_floor = "256M"
+mem_high_ceiling = "768M"
+ema_alpha = 0.3
+min_interval_s = 60
+hysteresis = 0.20
+
+[[components]]
+unit = "business-health.service"
+label = "Business Health Monitor"
+tier = "background"
+kind = "service"
+cpu_weight_min = 20
+cpu_weight_max = 200
+mem_high_floor = "96M"
+mem_high_ceiling = "256M"
+min_interval_s = 300
+hysteresis = 0.25
+
+[[components]]
+unit = "kde-baloo.service"
+label = "Baloo Indexer"
+tier = "background"
+kind = "service"
+cpu_weight_min = 20
+cpu_weight_max = 150
+mem_high_floor = "128M"
+mem_high_ceiling = "512M"
+min_interval_s = 600
+hysteresis = 0.30
+
+# --- Miners ---------------------------------------------------------------
+# Set to the unit names your miners actually run under. The director protects
+# these: it will never set MemoryMax on them, never shrink their MemoryHigh,
+# and holds a CPUWeight floor whenever they show real load.
+# Replace these two with your real miner unit names before enabling.
+
+# [[components]]
+# unit = "xmr-miner-1.service"
+# label = "Monero Miner 1"
+# tier = "mining"
+# kind = "miner"
+# cpu_weight_min = 2000
+# cpu_weight_max = 8000
+# mem_high_floor = "512M"
+# mem_high_ceiling = "1200M"
+# min_interval_s = 120
+# hysteresis = 0.25
+
+# [[components]]
+# unit = "xmr-miner-2.service"
+# label = "Monero Miner 2"
+# tier = "mining"
+# kind = "miner"
+# cpu_weight_min = 2000
+# cpu_weight_max = 8000
+# mem_high_floor = "512M"
+# mem_high_ceiling = "1200M"
+# min_interval_s = 120
+# hysteresis = 0.25

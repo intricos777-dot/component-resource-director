@@ -1,0 +1,49 @@
+[Unit]
+Description=Component Resource Director (demand-driven allocation for user services)
+Documentation=file:///home/livings/Projects/component-resource-director/README.md
+After=default.target
+# Start well after the session so it never competes with login.
+PartOf=graphical-session.target
+# Never let a wedged director sit in a restart loop eating CPU.
+# (StartLimit* live in [Unit], not [Service] -- systemd 262 rejects them there.)
+StartLimitIntervalSec=300
+StartLimitBurst=3
+
+[Service]
+Type=simple
+WorkingDirectory=/home/livings/Projects/component-resource-director
+ExecStart=/usr/bin/python3 -m crd.daemon --state %S/component-resource-director/state.json
+ExecReload=/usr/bin/python3 -m crd.cli report
+Restart=on-failure
+RestartSec=30
+
+# --- The director must never be the reason the rig struggles. -------------
+# These apply to the director itself: it is the lowest-priority thing on the
+# box and it is capped. On a 4-miner node, monitoring yields first.
+Nice=19
+IOSchedulingClass=idle
+CPUWeight=10
+CPUQuota=15%
+MemoryHigh=192M
+MemoryMax=256M
+TasksMax=32
+
+# It only needs its own state dir.
+StateDirectory=component-resource-director
+Environment=PYTHONUNBUFFERED=1
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+# %S is $XDG_STATE_HOME (no 'home' segment). It must match the
+# daemon's --state default below or the sandbox cannot resolve the path.
+Environment=XDG_STATE_HOME=%S
+ReadWritePaths=%S
+# It must be able to talk to the user systemd manager.
+PrivateTmp=yes
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=crd
+
+[Install]
+WantedBy=default.target
