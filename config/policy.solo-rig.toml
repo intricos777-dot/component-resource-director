@@ -1,0 +1,135 @@
+# component-resource-director policy — linux-zen-build solo rig
+#
+# Generated for the real unit names created by
+#   miners/install-solo-miners.sh --services
+# which are: solo-btc, solo-ltc, solo-doge, solo-rvn (all --user units,
+# running as `livings`).
+#
+# Copy to ~/.config/component-resource-director/policy.toml to use.
+#
+# NOT INSTALLED OR ENABLED. `crd validate` will report solo-doge and
+# solo-rvn as missing until those units exist, which is expected: the miner
+# installer has not been run yet.
+
+[director]
+sampling_interval_s = 15
+persist = false            # flip to true only after a dry run you trust
+
+# --- Safety floor ---------------------------------------------------------
+# Sized for a 7.4GiB laptop (7550Mi total) carrying four miners.
+#
+# The previous defaults did NOT fit: 7550 x 0.70 - 1536 = 3749Mi of
+# MemoryHigh available against ~4700Mi of resident miner memory. The director
+# reported that rather than handing out unsatisfiable limits, which is correct
+# behaviour but useless as a config. These values fit:
+#   7550 x 0.80 - 1024 = 5016Mi
+# which covers four miners at 1GiB plus the desktop tiers with headroom.
+
+[safety]
+reserve_bytes = "1024M"
+max_managed_mem_high_fraction = 0.80
+mem_available_pause_bytes = "1024M"
+max_floor_weight_sum = 4000
+allow_memory_max_on_miners = false
+
+# --- Tiers ----------------------------------------------------------------
+# critical > mining > workload > background.
+
+[[components]]
+unit = "hermes-gateway.service"
+label = "Hermes Gateway"
+tier = "critical"
+kind = "service"
+cpu_weight_min = 300
+cpu_weight_max = 4000
+mem_high_floor = "256M"
+mem_high_ceiling = "768M"
+ema_alpha = 0.3
+min_interval_s = 60
+hysteresis = 0.20
+
+[[components]]
+unit = "business-health.service"
+label = "Business Health Monitor"
+tier = "background"
+kind = "service"
+cpu_weight_min = 20
+cpu_weight_max = 200
+mem_high_floor = "96M"
+mem_high_ceiling = "256M"
+min_interval_s = 300
+hysteresis = 0.25
+
+[[components]]
+unit = "kde-baloo.service"
+label = "Baloo Indexer"
+tier = "background"
+kind = "service"
+cpu_weight_min = 20
+cpu_weight_max = 150
+mem_high_floor = "128M"
+mem_high_ceiling = "512M"
+min_interval_s = 600
+hysteresis = 0.30
+
+# --- Miners ---------------------------------------------------------------
+# Real names from install-solo-miners.sh. kind = "miner" means the director
+# will NEVER set MemoryMax, never shrink MemoryHigh below the floor, and holds
+# CPUWeight between 2000 and 8000 while the miner shows real load.
+#
+# NOTE ON ENABLING: solo-doge and solo-rvn will not exist until you supply a
+# valid DOGE address and an RVN node. Listing a unit that does not exist makes
+# `crd validate` fail, so enable the director only after the miner services
+# you actually want are running — or comment out the ones you have not built.
+
+[[components]]
+unit = "solo-btc.service"
+label = "Solo BTC (sha256d, CPU)"
+tier = "mining"
+kind = "miner"
+cpu_weight_min = 2000
+cpu_weight_max = 8000
+mem_high_floor = "512M"
+mem_high_ceiling = "1200M"
+min_interval_s = 120
+hysteresis = 0.25
+
+[[components]]
+unit = "solo-ltc.service"
+label = "Solo LTC (scrypt, CPU)"
+tier = "mining"
+kind = "miner"
+cpu_weight_min = 2000
+cpu_weight_max = 8000
+mem_high_floor = "512M"
+mem_high_ceiling = "1200M"
+min_interval_s = 120
+hysteresis = 0.25
+
+# Blocked: the DOGE address on record is not a valid address (24 chars, bad
+# checksum, Bitcoin version byte). The service refuses to start until replaced.
+# [[components]]
+# unit = "solo-doge.service"
+# label = "Solo DOGE (scrypt, CPU)"
+# tier = "mining"
+# kind = "miner"
+# cpu_weight_min = 2000
+# cpu_weight_max = 8000
+# mem_high_floor = "512M"
+# mem_high_ceiling = "1200M"
+# min_interval_s = 120
+# hysteresis = 0.25
+
+# Blocked: Ravencoin Core is in neither Arch repos nor the AUR, so there is no
+# node to mine against. See miners/docs/RVN-NODE-GAP.md.
+# [[components]]
+# unit = "solo-rvn.service"
+# label = "Solo RVN (kawpow, GPU)"
+# tier = "mining"
+# kind = "miner"
+# cpu_weight_min = 2000
+# cpu_weight_max = 8000
+# mem_high_floor = "512M"
+# mem_high_ceiling = "1200M"
+# min_interval_s = 120
+# hysteresis = 0.25
