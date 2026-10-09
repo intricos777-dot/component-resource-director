@@ -1,0 +1,82 @@
+# component-resource-director policy — with 32GB swap, AI RAM/VRAM from swap range
+#
+# Copied from policy.solo-rig.toml with:
+#   - swap resized 7.4GB → 32GB (34,359,738,368 bytes)
+#   - half the swap (16GB) allocated as additional RAM/VRAM storage for managed
+#     services via MemoryHigh ceilings
+#   - services only draw internal RAM/VRAM when fully or mostly in use
+#
+# Copy to ~/.config/component-resource-director/policy.toml
+
+[director]
+sampling_interval_s = 15
+persist = false
+
+[safety]
+reserve_bytes = "1024M"
+max_managed_mem_high_fraction = 0.80
+mem_available_pause_bytes = "1024M"
+max_floor_weight_sum = 4000
+allow_memory_max_on_miners = false
+
+[[components]]
+unit = "hermes-gateway.service"
+label = "Hermes Gateway"
+tier = "critical"
+kind = "service"
+cpu_weight_min = 300
+cpu_weight_max = 4000
+mem_high_floor = "256M"
+mem_high_ceiling = "2048M"
+ema_alpha = 0.3
+min_interval_s = 60
+hysteresis = 0.20
+
+[[components]]
+unit = "business-health.service"
+label = "Business Health Monitor"
+tier = "background"
+kind = "service"
+cpu_weight_min = 20
+cpu_weight_max = 200
+mem_high_floor = "96M"
+mem_high_ceiling = "512M"
+min_interval_s = 300
+hysteresis = 0.25
+
+[[components]]
+unit = "kde-baloo.service"
+label = "Baloo Indexer"
+tier = "background"
+kind = "service"
+cpu_weight_min = 20
+cpu_weight_max = 150
+mem_high_floor = "128M"
+mem_high_ceiling = "512M"
+min_interval_s = 600
+hysteresis = 0.30
+
+# Miners — protected from MemoryMax, floors held on demand
+[[components]]
+unit = "solo-btc.service"
+label = "Solo BTC (sha256d, CPU)"
+tier = "mining"
+kind = "miner"
+cpu_weight_min = 2000
+cpu_weight_max = 8000
+mem_high_floor = "512M"
+mem_high_ceiling = "1200M"
+min_interval_s = 120
+hysteresis = 0.25
+
+[[components]]
+unit = "solo-ltc.service"
+label = "Solo LTC (scrypt, CPU)"
+tier = "mining"
+kind = "miner"
+cpu_weight_min = 2000
+cpu_weight_max = 8000
+mem_high_floor = "512M"
+mem_high_ceiling = "1200M"
+min_interval_s = 120
+hysteresis = 0.25
