@@ -1,4 +1,7 @@
 # Watermark: Living_Sin (intricos777-dot) + AI agents (Hermes, Lia, opencode) - collaborative work
+# Copyright (c) 2026 Living Sin (intricos777-dot) + AI agents (Hermes, Lia, opencode) - collaborative work
+# Licensed under Living Sin Proprietary License (LSPL-1.0)
+# See LICENSE file for details.
 """Configuration loading and validation for the Component Resource Director.
 
 Policy lives in a single TOML file (stdlib ``tomllib``, no third-party deps).
