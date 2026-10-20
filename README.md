@@ -1,3 +1,4 @@
+<!-- Watermark: Living_Sin (intricos777-dot) + AI agents (Hermes, Lia, opencode) - collaborative work -->
 # component-resource-director
 
 A resource director that allocates **CPU, memory and I/O to individual services

@@ -1,3 +1,4 @@
+# Watermark: Living_Sin (intricos777-dot) + AI agents (Hermes, Lia, opencode) - collaborative work
 """Command-line entry point.
 
 Subcommands, in increasing order of authority:

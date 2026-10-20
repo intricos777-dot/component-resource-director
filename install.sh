@@ -1,3 +1,4 @@
+# Watermark: Living_Sin (intricos777-dot) + AI agents (Hermes, Lia, opencode) - collaborative work
 # Install the director as a systemd USER service. No sudo required.
 
 set -euo pipefail

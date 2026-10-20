@@ -1,3 +1,4 @@
+# Watermark: Living_Sin (intricos777-dot) + AI agents (Hermes, Lia, opencode) - collaborative work
 """Apply a plan to systemd, or explain why it cannot be applied.
 
 Two application modes, deliberately separated:

@@ -1,3 +1,4 @@
+# Watermark: Living_Sin (intricos777-dot) + AI agents (Hermes, Lia, opencode) - collaborative work
 """Sample real resource usage for each managed unit.
 
 Design constraint: the director runs on a 7.4GiB box shared with 4 miners, so

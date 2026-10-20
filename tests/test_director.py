@@ -1,3 +1,4 @@
+# Watermark: Living_Sin (intricos777-dot) + AI agents (Hermes, Lia, opencode) - collaborative work
 """Test suite for the component resource director.
 
 Run: python3 -m unittest discover -s tests -v   (from the project root)

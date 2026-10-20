@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Watermark: Living_Sin (intricos777-dot) + AI agents (Hermes, Lia, opencode) - collaborative work
 set -euo pipefail
 
 # Delegate the io cgroup controller into the user slice so IOWeight works.

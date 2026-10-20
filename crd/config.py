@@ -1,3 +1,4 @@
+# Watermark: Living_Sin (intricos777-dot) + AI agents (Hermes, Lia, opencode) - collaborative work
 """Configuration loading and validation for the Component Resource Director.
 
 Policy lives in a single TOML file (stdlib ``tomllib``, no third-party deps).

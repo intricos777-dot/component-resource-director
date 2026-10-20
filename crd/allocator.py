@@ -1,3 +1,4 @@
+# Watermark: Living_Sin (intricos777-dot) + AI agents (Hermes, Lia, opencode) - collaborative work
 """Demand-driven allocation of CPU / memory / IO to each component.
 
 The allocator is a pure function: (policy, samples, host facts, history) ->
